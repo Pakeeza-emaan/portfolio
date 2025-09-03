@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Emob Project – Pakeeza Eman</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --dark-bg: #121212;
+      --primary-color: #8A2BE2;
+      --accent-color: #00FFFF;
+      --text-color: #F5F5F5;
+      --highlight-color: #FF4500;
+      --navbar-bg: rgba(25, 25, 25, 0.7);
+      --navbar-bg-scrolled: rgba(20, 20, 20, 0.85);
+    }
+
+    body {
+      background-color: var(--dark-bg);
+      color: var(--text-color);
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      padding-top: 100px;
+      overflow-x: hidden;
+    }
+
+    header nav {
+      padding: 20px;
+      background-color: var(--navbar-bg);
+      position: fixed;
+      width: 95%;
+      max-width: 1200px;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      border-radius: 50px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    nav a {
+      text-decoration: none;
+      color: var(--accent-color);
+      font-weight: 500;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 60px 20px 30px;
+    }
+
+    .hero h1 {
+      font-size: 2.5rem;
+      background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+    }
+
+    .tagline {
+      font-size: 1.1rem;
+      color: var(--text-color);
+      opacity: 0.8;
+    }
+    .portfolio-row {
+  display: flex;
+  justify-content: center; /* or use space-between / space-around */
+   /* spacing between images */
+  flex-wrap: wrap; /* allows wrapping on smaller screens */
+  
+}
+
+
+
+
+    .project-info {
+      display:block;
+      flex-direction: row;
+      align-items:flex-start;
+      padding: 40px 20px;
+      max-width: 1000px;
+      margin: 0 auto;
+      gap: 20px;
+    }
+
+    .project-main-img,
+    .project-video {
+       width: 300px; /* or any size you want */
+  height: auto;
+  
+
+      
+      max-width: 900px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 255, 255, 0.2);
+      margin-bottom: 40px;
+      margin-right: 20px;
+    }
+
+    .project-details {
+      width: 100%;
+    }
+
+    .project-details h2,
+    .project-details h3 {
+      color: var(--accent-color);
+    }
+
+    .project-details ul {
+      padding-left: 20px;
+      margin-bottom: 20px;
+    }
+
+    .project-details li {
+      margin-bottom: 8px;
+    }
+
+    .btn {
+      display: inline-block;
+      margin-top: 20px;
+      background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+      color: var(--dark-bg);
+      padding: 10px 20px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.35s ease;
+      box-shadow: 0 2px 8px rgba(138, 43, 226, 0.3);
+    }
+
+    .btn:hover {
+      transform: translateY(-4px) scale(1.03);
+      box-shadow: 0 6px 18px rgba(138, 43, 226, 0.5);
+      background: linear-gradient(90deg, var(--accent-color), var(--primary-color));
+      color: var(--dark-bg);
+    }
+
+    footer {
+      text-align: center;
+      padding: 30px;
+      background-color: #1e1e1e;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="index.html">← Back to Portfolio</a>
+    </nav>
+  </header>
+
+  <main class="project-detail">
+    <section class="hero">
+      <h1>Interactive Dating App</h1>
+      <!-- <p class="tagline">Custom SaaS UI for seamless chatbot setup and e-commerce integration</p> -->
+    </section>
+
+    <section class="project-info">
+      <img src="images/32.png" alt="Emob UI Preview" class="project-main-img">
+      <img src="images/33.png" alt="Emob UI Preview" class="project-main-img">
+      <img src="images/34.png" alt="Emob UI Preview" class="project-main-img">
+      <img src="images/35.png" alt="Emob UI Preview" class="project-main-img">
+      <img src="images/36.png" alt="Emob UI Preview" class="project-main-img">
+      <img src="images/37.png" alt="Emob UI Preview" class="project-main-img">
+      <img src="images/38.png" alt="Emob UI Preview" class="project-main-img">
+      <img src="images/39.png" alt="Emob UI Preview" class="project-main-img">
+      <img src="images/40.png" alt="Emob UI Preview" class="project-main-img">
+      <img src="images/41.png" alt="Emob UI Preview" class="project-main-img">
+      <img src="images/42.png" alt="Emob UI Preview" class="project-main-img">
+      <img src="images/43.png" alt="Emob UI Preview" class="project-main-img">
+      <img src="images/44.png" alt="Emob UI Preview" class="project-main-img">
+      <img src="images/45.png" alt="Emob UI Preview" class="project-main-img">
+      <img src="images/46.png" alt="Emob UI Preview" class="project-main-img">
+      <img src="images/47.png" alt="Emob UI Preview" class="project-main-img">
+      <img src="images/48.png" alt="Emob UI Preview" class="project-main-img">
+
+
+
+
+
+      
+
+      <div class="project-details">
+        <h2>Overview</h2>
+        <p>ClubConnect is a modern dating app designed to help people form meaningful connections through a fun, secure, and engaging platform. My goal was to create a vibrant yet intuitive UI that encourages user interaction, simplifies profile exploration, and makes the overall experience seamless across devices.</p>
+
+        <h3>My Role</h3>
+        <ul>
+          <li>UI/UX Design</li>
+          <li>Wireframing & Prototyping</li>
+          <li>Design System & Branding</li>
+        </ul>
+
+        <h3>Tools Used</h3>
+        <p>Figma</p>
+
+        <h3>Key Features Designed</h3>
+        <ul>
+          <li>Quick Onboarding with profile setup</li>
+          <li>Messaging & Reactions</li>
+          <li>Clubs & Events Integration</li>
+          <li>Minimal User Profiles</li>
+        </ul>
+
+        <a href="https://figma.com/your-prototype-link" class="btn" target="_blank">View Figma Prototype</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2025 Pakeeza Eman</p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,998 @@
+// Enhanced 3D Avatar Implementation for UI/UX Designer Profile
+// This script creates a stylized female 3D avatar representing a UI/UX designer
+// with increased height and better professional appearance
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Find the profile image container
+    const profileContainer = document.querySelector('.position-relative.overflow-hidden');
+    
+    // If the container exists, initialize the 3D avatar
+    if (profileContainer) {
+        // Remove the existing profile image
+        const profileImage = profileContainer.querySelector('img');
+        if (profileImage) {
+            profileImage.style.display = 'none';
+        }
+        
+        // Create a container for the 3D scene with INCREASED HEIGHT
+        const threeContainer = document.createElement('div');
+        threeContainer.id = 'profile-3d-container';
+        threeContainer.style.width = '100%';
+        threeContainer.style.height = '600px'; // Increased from 400px to 600px
+        threeContainer.style.borderRadius = '20px';
+        profileContainer.appendChild(threeContainer);
+        
+        // Create loading indicator
+        const loadingDiv = document.createElement('div');
+        loadingDiv.className = 'profile-3d-loading';
+        loadingDiv.innerHTML = '<div>Creating your digital avatar...</div>';
+        profileContainer.appendChild(loadingDiv);
+        
+        // Initialize the 3D scene
+        initProfileAvatar(loadingDiv);
+    }
+});
+
+function initProfileAvatar(loadingElement) {
+    // Scene, camera, and renderer setup
+    const container = document.getElementById('profile-3d-container');
+    const scene = new THREE.Scene();
+    
+    // Set up camera with adjusted position for better view
+    const camera = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 0.1, 1000);
+    camera.position.set(0, 1.8, 6); // Adjusted camera position for better framing of taller avatar
+    
+    // Set up renderer with transparent background
+    const renderer = new THREE.WebGLRenderer({ 
+        antialias: true, 
+        alpha: true 
+    });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    container.appendChild(renderer.domElement);
+    
+    // Add lighting
+    setupLighting(scene);
+    
+    // Create a circular platform
+    const platformGeometry = new THREE.CylinderGeometry(2, 2.2, 0.1, 32);
+    const platformMaterial = new THREE.MeshStandardMaterial({ 
+        color: 0x222228,
+        metalness: 0.8,
+        roughness: 0.2
+    });
+    const platform = new THREE.Mesh(platformGeometry, platformMaterial);
+    platform.position.y = -2;
+    platform.receiveShadow = true;
+    scene.add(platform);
+    
+    // Add subtle glow to the platform edge
+    const platformGlowGeometry = new THREE.TorusGeometry(2, 0.1, 16, 32);
+    const platformGlowMaterial = new THREE.MeshBasicMaterial({ 
+        color: 0x6e57e0, // Primary color
+        transparent: true,
+        opacity: 0.7
+    });
+    const platformGlow = new THREE.Mesh(platformGlowGeometry, platformGlowMaterial);
+    platformGlow.position.y = -1.95;
+    platformGlow.rotation.x = Math.PI / 2;
+    scene.add(platformGlow);
+    
+    // Create a group to hold the avatar elements
+    const avatarGroup = new THREE.Group();
+    scene.add(avatarGroup);
+    
+    // Create stylized female avatar with UI/UX designer look
+    createStylizedUXDesignerAvatar(avatarGroup).then(() => {
+        // Remove loading indicator once avatar is created
+        if (loadingElement) {
+            loadingElement.style.display = 'none';
+        }
+    }).catch(error => {
+        console.error("Error creating avatar:", error);
+        // Show the original image as fallback if there's an error
+        const profileImage = document.querySelector('.position-relative.overflow-hidden img');
+        if (profileImage) {
+            profileImage.style.display = 'block';
+        }
+        if (loadingElement) {
+            loadingElement.style.display = 'none';
+        }
+    });
+    
+    // Variables to track mouse movement
+    let mouseX = 0;
+    let mouseY = 0;
+    let targetRotationX = 0;
+    let targetRotationY = 0;
+    
+    // Add mouse move event listener
+    document.addEventListener('mousemove', (event) => {
+        // Calculate mouse position relative to the center of the window
+        mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+        mouseY = (event.clientY / window.innerHeight) * 2 - 1;
+        
+        // Convert to rotation targets with limited range
+        targetRotationY = mouseX * 0.5; // Horizontal rotation
+        targetRotationX = -mouseY * 0.2; // Vertical rotation limited
+    });
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+    });
+    
+    // Animation loop
+    function animate() {
+        requestAnimationFrame(animate);
+        
+        // Smooth rotation transition for the avatar
+        avatarGroup.rotation.y += (targetRotationY - avatarGroup.rotation.y) * 0.05;
+        
+        // Limit vertical rotation to prevent awkward angles
+        const maxVerticalRotation = 0.15;
+        const clampedTargetX = Math.max(Math.min(targetRotationX, maxVerticalRotation), -maxVerticalRotation);
+        avatarGroup.rotation.x += (clampedTargetX - avatarGroup.rotation.x) * 0.05;
+        
+        // Animate platform glow
+        platformGlow.rotation.z += 0.005;
+        
+        renderer.render(scene, camera);
+    }
+    
+    // Start the animation loop
+    animate();
+}
+
+function setupLighting(scene) {
+    // Ambient light for overall illumination
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+    
+    // Main directional light (key light)
+    const mainLight = new THREE.DirectionalLight(0xffffff, 1);
+    mainLight.position.set(3, 5, 3);
+    mainLight.castShadow = true;
+    
+    // Optimize shadow settings
+    mainLight.shadow.mapSize.width = 1024;
+    mainLight.shadow.mapSize.height = 1024;
+    mainLight.shadow.camera.near = 0.5;
+    mainLight.shadow.camera.far = 20;
+    mainLight.shadow.camera.left = -5;
+    mainLight.shadow.camera.right = 5;
+    mainLight.shadow.camera.top = 5;
+    mainLight.shadow.camera.bottom = -5;
+    mainLight.shadow.bias = -0.0005;
+    
+    scene.add(mainLight);
+    
+    // Fill light from the opposite side
+    const fillLight = new THREE.DirectionalLight(0xa0a0ff, 0.5);
+    fillLight.position.set(-5, 3, -2);
+    scene.add(fillLight);
+    
+    // Rim light for edge highlighting
+    const rimLight = new THREE.DirectionalLight(0xff9f7f, 0.5);
+    rimLight.position.set(0, 2, -5);
+    scene.add(rimLight);
+    
+    // Add a subtle colored point light
+    const accentLight = new THREE.PointLight(0x00d9ff, 1, 10); // Accent color
+    accentLight.position.set(0, 0, 3);
+    scene.add(accentLight);
+    
+    // Animate the accent light
+    function animateAccentLight() {
+        accentLight.intensity = 0.5 + 0.5 * Math.sin(Date.now() * 0.002);
+        requestAnimationFrame(animateAccentLight);
+    }
+    
+    animateAccentLight();
+}
+
+async function createStylizedUXDesignerAvatar(group) {
+    // Define colors based on website's theme
+    const primaryColor = new THREE.Color(0x6e57e0);
+    const accentColor = new THREE.Color(0x00d9ff);
+    const highlightColor = new THREE.Color(0xff3e8e);
+    
+    // Create a new group for the female avatar
+    const femaleAvatar = new THREE.Group();
+    
+    // ----- Head -----
+    const headGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+    const skinMaterial = new THREE.MeshStandardMaterial({
+        color: 0xffecd6,
+        roughness: 0.5,
+        metalness: 0.1
+    });
+    const head = new THREE.Mesh(headGeometry, skinMaterial);
+    head.position.y = 1.5;
+    head.castShadow = true;
+    femaleAvatar.add(head);
+    
+    // ----- Hair ----- (Modern UI/UX Designer style)
+    const hairMaterial = new THREE.MeshStandardMaterial({
+        color: 0x222222,
+        roughness: 0.8,
+        metalness: 0.1
+    });
+    
+    // Create stylish modern hairstyle (bob cut with side part)
+    const hairTop = new THREE.Mesh(
+        new THREE.SphereGeometry(0.54, 32, 32, 0, Math.PI * 2, 0, Math.PI / 2),
+        hairMaterial
+    );
+    hairTop.position.y = 1.55;
+    hairTop.castShadow = true;
+    femaleAvatar.add(hairTop);
+    
+    // Hair bob cut (shorter than before)
+    const hairBack = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.4, 0.35, 0.6, 32, 1, true),
+        hairMaterial
+    );
+    hairBack.position.set(0, 1.2, -0.1);
+    hairBack.castShadow = true;
+    femaleAvatar.add(hairBack);
+    
+    // Side bangs (asymmetrical - modern style)
+    const leftBang = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.08, 0.06, 0.5, 12),
+        hairMaterial
+    );
+    leftBang.position.set(-0.4, 1.3, 0.1);
+    leftBang.rotation.x = 0.2;
+    leftBang.rotation.z = -0.3;
+    femaleAvatar.add(leftBang);
+    
+    // Subtle highlight in hair - tech style
+    const hairHighlight = new THREE.Mesh(
+        new THREE.BoxGeometry(0.1, 0.3, 0.1),
+        new THREE.MeshStandardMaterial({
+            color: accentColor,
+            roughness: 0.7,
+            metalness: 0.3
+        })
+    );
+    hairHighlight.position.set(0.25, 1.3, 0);
+    hairHighlight.rotation.z = 0.2;
+    femaleAvatar.add(hairHighlight);
+    
+    // ----- Face Features -----
+    // Modern glasses - signature of tech/designer look
+    const glassesFrontGeometry = new THREE.BoxGeometry(0.7, 0.12, 0.05);
+    const glassesMaterial = new THREE.MeshStandardMaterial({
+        color: 0x222222,
+        roughness: 0.5,
+        metalness: 0.8
+    });
+    const glassesFront = new THREE.Mesh(glassesFrontGeometry, glassesMaterial);
+    glassesFront.position.set(0, 1.55, 0.4);
+    femaleAvatar.add(glassesFront);
+    
+    // Left lens
+    const lensGeometry = new THREE.CylinderGeometry(0.15, 0.15, 0.05, 16);
+    const lensMaterial = new THREE.MeshStandardMaterial({
+        color: 0x6BA5F2,
+        transparent: true,
+        opacity: 0.3,
+        metalness: 0.9,
+        roughness: 0.1
+    });
+    
+    const leftLens = new THREE.Mesh(lensGeometry, lensMaterial);
+    leftLens.rotation.x = Math.PI / 2;
+    leftLens.position.set(-0.18, 1.55, 0.42);
+    femaleAvatar.add(leftLens);
+    
+    // Right lens
+    const rightLens = new THREE.Mesh(lensGeometry, lensMaterial);
+    rightLens.rotation.x = Math.PI / 2;
+    rightLens.position.set(0.18, 1.55, 0.42);
+    femaleAvatar.add(rightLens);
+    
+    // Eyes
+    const eyeGeometry = new THREE.SphereGeometry(0.07, 16, 16);
+    const eyeWhiteMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    
+    const leftEye = new THREE.Mesh(eyeGeometry, eyeWhiteMaterial);
+    leftEye.position.set(-0.18, 1.55, 0.42);
+    leftEye.scale.z = 0.5;
+    femaleAvatar.add(leftEye);
+    
+    const rightEye = new THREE.Mesh(eyeGeometry, eyeWhiteMaterial);
+    rightEye.position.set(0.18, 1.55, 0.42);
+    rightEye.scale.z = 0.5;
+    femaleAvatar.add(rightEye);
+    
+    // Eye pupils
+    const pupilGeometry = new THREE.SphereGeometry(0.04, 16, 16);
+    const pupilMaterial = new THREE.MeshBasicMaterial({ color: 0x463f3a });
+    
+    const leftPupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
+    leftPupil.position.set(-0.18, 1.55, 0.47);
+    femaleAvatar.add(leftPupil);
+    
+    const rightPupil = new THREE.Mesh(pupilGeometry, pupilMaterial);
+    rightPupil.position.set(0.18, 1.55, 0.47);
+    femaleAvatar.add(rightPupil);
+    
+    // Eyebrows
+    const eyebrowGeometry = new THREE.BoxGeometry(0.15, 0.03, 0.03);
+    const eyebrowMaterial = new THREE.MeshBasicMaterial({ color: 0x222222 });
+    
+    const leftEyebrow = new THREE.Mesh(eyebrowGeometry, eyebrowMaterial);
+    leftEyebrow.position.set(-0.18, 1.67, 0.43);
+    leftEyebrow.rotation.z = -0.1;
+    femaleAvatar.add(leftEyebrow);
+    
+    const rightEyebrow = new THREE.Mesh(eyebrowGeometry, eyebrowMaterial);
+    rightEyebrow.position.set(0.18, 1.67, 0.43);
+    rightEyebrow.rotation.z = 0.1;
+    femaleAvatar.add(rightEyebrow);
+    
+    // Lips/mouth - subtle professional look
+    const lipsMaterial = new THREE.MeshPhongMaterial({ 
+        color: new THREE.Color(0xDB7093).lerp(new THREE.Color(0xFF69B4), 0.5), 
+        shininess: 100 
+    });
+    const lips = new THREE.Mesh(
+        new THREE.SphereGeometry(0.1, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2),
+        lipsMaterial
+    );
+    lips.scale.y = 0.25;
+    lips.scale.z = 0.4;
+    lips.rotation.x = -Math.PI / 2;
+    lips.position.set(0, 1.3, 0.4);
+    femaleAvatar.add(lips);
+    
+    // Nose
+    const nose = new THREE.Mesh(
+        new THREE.ConeGeometry(0.06, 0.1, 16),
+        skinMaterial
+    );
+    nose.scale.z = 0.5;
+    nose.rotation.x = -Math.PI / 2;
+    nose.position.set(0, 1.45, 0.45);
+    femaleAvatar.add(nose);
+    
+    // ----- Body ----- (Professional UI/UX designer outfit)
+    // Neck
+    const neck = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.15, 0.15, 0.3, 32),
+        skinMaterial
+    );
+    neck.position.y = 1.1;
+    neck.castShadow = true;
+    femaleAvatar.add(neck);
+    
+    // Torso - modern professional look
+    const upperBodyGeometry = new THREE.CylinderGeometry(0.38, 0.32, 0.9, 32);
+    const clothingMaterial = new THREE.MeshStandardMaterial({
+        color: 0x333333, // Dark professional top
+        roughness: 0.7,
+        metalness: 0.2
+    });
+    const upperBody = new THREE.Mesh(upperBodyGeometry, clothingMaterial);
+    upperBody.position.y = 0.65;
+    upperBody.castShadow = true;
+    femaleAvatar.add(upperBody);
+    
+    // Add tech company logo/badge
+    const badgeGeometry = new THREE.CircleGeometry(0.08, 16);
+    const badgeMaterial = new THREE.MeshStandardMaterial({
+        color: primaryColor,
+        roughness: 0.4,
+        metalness: 0.6
+    });
+    const techBadge = new THREE.Mesh(badgeGeometry, badgeMaterial);
+    techBadge.position.set(0.20, 0.9, 0.33);
+    techBadge.rotation.y = Math.PI / 6;
+    femaleAvatar.add(techBadge);
+    
+    // Professional pants/lower body (instead of dress)
+    const pantsGeometry = new THREE.CylinderGeometry(0.33, 0.28, 1.3, 32);
+    const pantsMaterial = new THREE.MeshStandardMaterial({
+        color: 0x1a1a1a, // Dark professional pants
+        roughness: 0.8,
+        metalness: 0.2
+    });
+    const pants = new THREE.Mesh(pantsGeometry, pantsMaterial);
+    pants.position.y = -0.3;
+    pants.castShadow = true;
+    femaleAvatar.add(pants);
+    
+    // Arms
+    const armGeometry = new THREE.CylinderGeometry(0.08, 0.07, 0.8, 16);
+    
+    // Left arm - bent slightly to look like holding tablet/device
+    const leftArm = new THREE.Group();
+    
+    const leftUpperArm = new THREE.Mesh(armGeometry, skinMaterial);
+    leftUpperArm.position.set(0, 0.2, 0);
+    leftUpperArm.rotation.z = Math.PI/4;
+    leftArm.add(leftUpperArm);
+    
+    const leftLowerArm = new THREE.Mesh(armGeometry, skinMaterial);
+    leftLowerArm.position.set(-0.3, -0.3, 0.2);
+    leftLowerArm.rotation.z = -Math.PI/6;
+    leftLowerArm.rotation.y = Math.PI/6;
+    leftArm.add(leftLowerArm);
+    
+    leftArm.position.set(-0.4, 0.7, 0);
+    femaleAvatar.add(leftArm);
+    
+    // Right arm - positioned for typing/working
+    const rightArm = new THREE.Group();
+    
+    const rightUpperArm = new THREE.Mesh(armGeometry, skinMaterial);
+    rightUpperArm.position.set(0, 0.2, 0);
+    rightUpperArm.rotation.z = -Math.PI/4;
+    rightArm.add(rightUpperArm);
+    
+    const rightLowerArm = new THREE.Mesh(armGeometry, skinMaterial);
+    rightLowerArm.position.set(0.3, -0.3, 0.2);
+    rightLowerArm.rotation.z = Math.PI/6;
+    rightLowerArm.rotation.y = -Math.PI/6;
+    rightArm.add(rightLowerArm);
+    
+    rightArm.position.set(0.4, 0.7, 0);
+    femaleAvatar.add(rightArm);
+    
+    // Hands
+    const handGeometry = new THREE.SphereGeometry(0.08, 16, 16);
+    
+    // Left hand
+    const leftHand = new THREE.Mesh(handGeometry, skinMaterial);
+    leftHand.position.set(-0.7, 0.1, 0.3);
+    leftHand.castShadow = true;
+    femaleAvatar.add(leftHand);
+    
+    // Right hand
+    const rightHand = new THREE.Mesh(handGeometry, skinMaterial);
+    rightHand.position.set(0.7, 0.1, 0.3);
+    rightHand.castShadow = true;
+    femaleAvatar.add(rightHand);
+    
+    // Device/tablet in hand (UI/UX designer essential)
+    const tabletGeometry = new THREE.BoxGeometry(0.4, 0.3, 0.02);
+    const tabletMaterial = new THREE.MeshStandardMaterial({
+        color: 0x111111,
+        roughness: 0.2,
+        metalness: 0.8
+    });
+    const tablet = new THREE.Mesh(tabletGeometry, tabletMaterial);
+    tablet.position.set(-0.5, 0.1, 0.4);
+    tablet.rotation.y = Math.PI/10;
+    femaleAvatar.add(tablet);
+    
+    // Screen of tablet
+    const screenGeometry = new THREE.BoxGeometry(0.35, 0.25, 0.01);
+    const screenMaterial = new THREE.MeshBasicMaterial({
+        color: 0x6BA5F2,
+        transparent: true,
+        opacity: 0.9
+    });
+    const screen = new THREE.Mesh(screenGeometry, screenMaterial);
+    screen.position.set(-0.5, 0.1, 0.415);
+    screen.rotation.y = Math.PI/10;
+    femaleAvatar.add(screen);
+    
+    // UI elements on screen
+    const uiElementMaterial = new THREE.MeshBasicMaterial({ color: 0xFFFFFF });
+    
+    // UI element 1 (header)
+    const uiHeader = new THREE.Mesh(
+        new THREE.BoxGeometry(0.3, 0.03, 0.01),
+        uiElementMaterial
+    );
+    uiHeader.position.set(-0.5, 0.2, 0.425);
+    uiHeader.rotation.y = Math.PI/10;
+    femaleAvatar.add(uiHeader);
+    
+    // UI element 2 (content block)
+    const uiContent = new THREE.Mesh(
+        new THREE.BoxGeometry(0.2, 0.08, 0.01),
+        uiElementMaterial
+    );
+    uiContent.position.set(-0.5, 0.1, 0.425);
+    uiContent.rotation.y = Math.PI/10;
+    femaleAvatar.add(uiContent);
+    
+    // UI element 3 (button)
+    const uiButton = new THREE.Mesh(
+        new THREE.BoxGeometry(0.1, 0.03, 0.01),
+        new THREE.MeshBasicMaterial({ color: accentColor })
+    );
+    uiButton.position.set(-0.5, 0, 0.425);
+    uiButton.rotation.y = Math.PI/10;
+    femaleAvatar.add(uiButton);
+    
+    // Legs with professional boots
+    // Left leg
+    const leftLegGeometry = new THREE.CylinderGeometry(0.12, 0.09, 1.4, 16);
+    const leftLeg = new THREE.Mesh(leftLegGeometry, pantsMaterial);
+    leftLeg.position.set(-0.15, -1.2, 0);
+    femaleAvatar.add(leftLeg);
+    
+    // Right leg
+    const rightLegGeometry = new THREE.CylinderGeometry(0.12, 0.09, 1.4, 16);
+    const rightLeg = new THREE.Mesh(rightLegGeometry, pantsMaterial);
+    rightLeg.position.set(0.15, -1.2, 0);
+    femaleAvatar.add(rightLeg);
+    
+    // Boots
+    const bootGeometry = new THREE.CylinderGeometry(0.12, 0.15, 0.25, 16);
+    const bootMaterial = new THREE.MeshStandardMaterial({
+        color: 0x111111,
+        roughness: 0.9,
+        metalness: 0.2
+    });
+    
+    // Left boot
+    const leftBoot = new THREE.Mesh(bootGeometry, bootMaterial);
+    leftBoot.position.set(-0.15, -1.9, 0);
+    femaleAvatar.add(leftBoot);
+    
+    // Right boot
+    const rightBoot = new THREE.Mesh(bootGeometry, bootMaterial);
+    rightBoot.position.set(0.15, -1.9, 0);
+    femaleAvatar.add(rightBoot);
+    
+    // ----- Tech Accessories ----- (essential for a UI/UX designer look)
+    // Smart watch
+    const watchGeometry = new THREE.BoxGeometry(0.08, 0.12, 0.04);
+    const watchMaterial = new THREE.MeshStandardMaterial({
+        color: 0x111111,
+        roughness: 0.2,
+        metalness: 0.8
+    });
+    const smartWatch = new THREE.Mesh(watchGeometry, watchMaterial);
+    smartWatch.position.set(0.7, 0.3, 0.3);
+    smartWatch.rotation.z = Math.PI/12;
+    femaleAvatar.add(smartWatch);
+    
+    // Watch screen
+    const watchScreenGeometry = new THREE.BoxGeometry(0.06, 0.1, 0.01);
+    const watchScreenMaterial = new THREE.MeshBasicMaterial({
+        color: 0x6BA5F2,
+        transparent: true,
+        opacity: 0.9
+    });
+    const watchScreen = new THREE.Mesh(watchScreenGeometry, watchScreenMaterial);
+    watchScreen.position.set(0.7, 0.3, 0.325);
+    watchScreen.rotation.z = Math.PI/12;
+    femaleAvatar.add(watchScreen);
+    
+    // Subtle necklace with tech pendant
+    const necklaceGeometry = new THREE.TorusGeometry(0.12, 0.01, 8, 32, Math.PI);
+    const necklaceMaterial = new THREE.MeshStandardMaterial({
+        color: 0xC0C0C0,
+        metalness: 0.9,
+        roughness: 0.1
+    });
+    
+    const necklace = new THREE.Mesh(necklaceGeometry, necklaceMaterial);
+    necklace.position.set(0, 1.05, 0.18);
+    necklace.rotation.x = Math.PI;
+    femaleAvatar.add(necklace);
+    
+    // Tech pendant (stylized UI icon)
+    const pendantGeometry = new THREE.BoxGeometry(0.05, 0.05, 0.01);
+    const pendantMaterial = new THREE.MeshStandardMaterial({
+        color: accentColor,
+        metalness: 0.8,
+        roughness: 0.2
+    });
+    const pendant = new THREE.Mesh(pendantGeometry, pendantMaterial);
+    pendant.position.set(0, 0.98, 0.2);
+    femaleAvatar.add(pendant);
+    
+    // ----- Special Effects -----
+    // Digital aura to indicate tech/design expertise
+    const auraGeometry = new THREE.SphereGeometry(1.8, 32, 32);
+    const auraMaterial = new THREE.MeshBasicMaterial({
+        color: primaryColor,
+        transparent: true,
+        opacity: 0.03,
+        wireframe: true
+    });
+    const aura = new THREE.Mesh(auraGeometry, auraMaterial);
+    aura.position.y = 0;
+    femaleAvatar.add(aura);
+    
+    const aura2Geometry = new THREE.SphereGeometry(1.7, 16, 16);
+    const aura2Material = new THREE.MeshBasicMaterial({
+        color: accentColor,
+        transparent: true,
+        opacity: 0.02,
+        wireframe: true
+    });
+    const aura2 = new THREE.Mesh(aura2Geometry, aura2Material);
+    aura2.position.y = 0;
+    femaleAvatar.add(aura2);
+    
+    // Digital particles symbolizing creativity
+    createTechParticles(femaleAvatar);
+    
+    // Add subtle animations
+    addSubtleAnimations(femaleAvatar);
+    
+    // Add the entire avatar to the group
+    group.add(femaleAvatar);
+    
+    // Center and position the avatar (adjusted for better visibility)
+    femaleAvatar.position.y = -0.2; // Raised position to better fit in taller container
+    
+    return Promise.resolve(); // Return a resolved promise to indicate completion
+}
+
+// This function creates the tech particles around the avatar
+function createTechParticles(group) {
+    // Create a group for the particles
+    const particlesGroup = new THREE.Group();
+    
+    // Create particles that look like UI elements, code snippets, etc.
+    const particleGeometries = [
+        new THREE.BoxGeometry(0.05, 0.05, 0.01), // Square UI elements
+        new THREE.SphereGeometry(0.03, 8, 8),    // Round buttons
+        new THREE.TorusGeometry(0.03, 0.01, 8, 16) // Circular UI elements
+    ];
+    
+    const particleMaterials = [
+        new THREE.MeshBasicMaterial({ color: 0x6e57e0, transparent: true, opacity: 0.7 }), // Primary brand color
+        new THREE.MeshBasicMaterial({ color: 0x00d9ff, transparent: true, opacity: 0.7 }), // Accent color
+        new THREE.MeshBasicMaterial({ color: 0xff3e8e, transparent: true, opacity: 0.7 })  // Highlight color
+    ];
+    
+    // Create 20 particles with random positions and geometries
+    for (let i = 0; i < 20; i++) {
+        const geoIndex = Math.floor(Math.random() * particleGeometries.length);
+        const matIndex = Math.floor(Math.random() * particleMaterials.length);
+        
+        const particle = new THREE.Mesh(
+            particleGeometries[geoIndex],
+            particleMaterials[matIndex]
+        );
+        
+        // Position particles in a cloud around the avatar (especially near hands/tablet)
+        const angle = Math.random() * Math.PI * 2;
+        const radius = 0.5 + Math.random() * 1.2;
+        const height = -1 + Math.random() * 3; // Full body height range
+        
+        // Position more particles near tablet/design area
+        let x = Math.cos(angle) * radius;
+        let z = Math.sin(angle) * radius;
+        
+        // 40% chance to position near the tablet
+        if (Math.random() < 0.4) {
+            x = -0.5 + Math.random() * 0.4 - 0.2;
+            z = 0.4 + Math.random() * 0.4 - 0.2;
+            height = 0.1 + Math.random() * 0.4 - 0.2;
+        }
+        
+        particle.position.set(x, height, z);
+        particle.rotation.set(
+            Math.random() * Math.PI * 2,
+            Math.random() * Math.PI * 2,
+            Math.random() * Math.PI * 2
+        );
+        
+        // Store original position for animation
+        particle.userData = {
+            originalY: particle.position.y,
+            speed: 0.005 + Math.random() * 0.01,
+            amplitude: 0.05 + Math.random() * 0.1,
+            phase: Math.random() * Math.PI * 2
+        };
+        
+        particlesGroup.add(particle);
+    }
+    
+    // Add the particles group to the avatar
+    group.add(particlesGroup);
+    
+    // Function to animate particles
+    function animateParticles() {
+        particlesGroup.children.forEach((particle, index) => {
+            // Float up and down
+            particle.position.y = particle.userData.originalY + 
+                Math.sin(Date.now() * particle.userData.speed + particle.userData.phase) * 
+                particle.userData.amplitude;
+            
+            // Subtle rotation
+            particle.rotation.x += 0.005;
+            particle.rotation.y += 0.003;
+            
+            // Pulse opacity for some particles
+            if (index % 3 === 0) {
+                const material = particle.material;
+                material.opacity = 0.3 + Math.sin(Date.now() * 0.002 + index) * 0.3;
+            }
+        });
+        
+        requestAnimationFrame(animateParticles);
+    }
+    
+    // Start particle animation
+    animateParticles();
+}
+
+// This function adds subtle animations to the avatar
+function addSubtleAnimations(avatar) {
+    // Store original positions for subtle idle animations
+    const originalPositions = new Map();
+    
+    // Find the meshes by traversing the avatar
+    avatar.traverse(object => {
+        if (object.isMesh) {
+            // Store original position of all meshes
+            originalPositions.set(object.uuid, {
+                position: object.position.clone(),
+                rotation: object.rotation.clone()
+            });
+        }
+    });
+    
+    // Breathing animation
+    function breathingAnimation() {
+        // Get current time for smooth animations
+        const time = Date.now() * 0.001;
+        
+        // Subtle breathing movement
+        avatar.traverse(object => {
+            if (object.isMesh) {
+                const original = originalPositions.get(object.uuid);
+                if (original) {
+                    // Different parts have different breathing intensities
+                    let breathIntensity = 0.002;
+                    
+                    // Upper body parts breathe more
+                    if (object.position.y > 0.5) {
+                        breathIntensity = 0.005;
+                    }
+                    
+                    // Apply breathing animation (subtle up/down movement)
+                    object.position.y = original.position.y + 
+                        Math.sin(time * 1.5) * breathIntensity * object.position.y;
+                    
+                    // Very subtle forward/backward movement
+                    object.position.z = original.position.z + 
+                        Math.sin(time * 1.2) * breathIntensity * 0.5;
+                }
+            }
+        });
+        
+        requestAnimationFrame(breathingAnimation);
+    }
+    
+    // Start breathing animation
+    breathingAnimation();
+    
+    // Random idle animations (like looking around slightly, subtle hand movements)
+    function randomIdleAnimations() {
+        // Only trigger occasionally
+        if (Math.random() > 0.01) {
+            setTimeout(randomIdleAnimations, 100);
+            return;
+        }
+        
+        // Random idle animation selection
+        const animationType = Math.floor(Math.random() * 3);
+        
+        switch (animationType) {
+            case 0:
+                // Subtle head movement (looking around)
+                avatar.traverse(object => {
+                    if (object.isMesh && object.position.y > 1.4) {
+                        const original = originalPositions.get(object.uuid);
+                        if (original) {
+                            // Create target rotation (slight look left/right/up/down)
+                            const targetRotationY = original.rotation.y + 
+                                (Math.random() * 0.2 - 0.1);
+                            const targetRotationX = original.rotation.x + 
+                                (Math.random() * 0.1 - 0.05);
+                            
+                            // Animate to target rotation
+                            let progress = 0;
+                            const duration = 2000; // 2 seconds
+                            const startTime = Date.now();
+                            const startRotY = object.rotation.y;
+                            const startRotX = object.rotation.x;
+                            
+                            function animateHeadMovement() {
+                                const elapsed = Date.now() - startTime;
+                                progress = Math.min(elapsed / duration, 1);
+                                
+                                // Ease in-out function for smoother movement
+                                const eased = progress < 0.5 ? 
+                                    2 * progress * progress : 
+                                    1 - Math.pow(-2 * progress + 2, 2) / 2;
+                                
+                                // Apply rotation
+                                object.rotation.y = startRotY + 
+                                    (targetRotationY - startRotY) * eased;
+                                object.rotation.x = startRotX + 
+                                    (targetRotationX - startRotX) * eased;
+                                
+                                // Continue animation until complete
+                                if (progress < 1) {
+                                    requestAnimationFrame(animateHeadMovement);
+                                } else {
+                                    // Return to original position after a pause
+                                    setTimeout(() => {
+                                        let returnProgress = 0;
+                                        const returnStartTime = Date.now();
+                                        const returnStartRotY = object.rotation.y;
+                                        const returnStartRotX = object.rotation.x;
+                                        
+                                        function returnToOriginal() {
+                                            const returnElapsed = Date.now() - returnStartTime;
+                                            returnProgress = Math.min(returnElapsed / duration, 1);
+                                            
+                                            // Ease in-out
+                                            const returnEased = returnProgress < 0.5 ? 
+                                                2 * returnProgress * returnProgress : 
+                                                1 - Math.pow(-2 * returnProgress + 2, 2) / 2;
+                                            
+                                            // Apply rotation back to original
+                                            object.rotation.y = returnStartRotY + 
+                                                (original.rotation.y - returnStartRotY) * returnEased;
+                                            object.rotation.x = returnStartRotX + 
+                                                (original.rotation.x - returnStartRotX) * returnEased;
+                                            
+                                            if (returnProgress < 1) {
+                                                requestAnimationFrame(returnToOriginal);
+                                            }
+                                        }
+                                        
+                                        returnToOriginal();
+                                    }, 1000 + Math.random() * 2000); // Random pause before returning
+                                }
+                            }
+                            
+                            animateHeadMovement();
+                        }
+                    }
+                });
+                break;
+                
+            case 1:
+                // Hand/tablet movement (like gesturing or working)
+                avatar.traverse(object => {
+                    // Find objects that look like hands or the tablet
+                    if (object.isMesh && 
+                        (Math.abs(object.position.x) > 0.6 || 
+                         (object.position.x < -0.3 && object.position.z > 0.3))) {
+                        
+                        const original = originalPositions.get(object.uuid);
+                        if (original) {
+                            // Create subtle movement targets
+                            const targetPositionY = original.position.y + 
+                                (Math.random() * 0.1 - 0.05);
+                            const targetPositionZ = original.position.z + 
+                                (Math.random() * 0.1 - 0.05);
+                            
+                            // Animate movement
+                            let progress = 0;
+                            const duration = 1500;
+                            const startTime = Date.now();
+                            const startPosY = object.position.y;
+                            const startPosZ = object.position.z;
+                            
+                            function animateHandMovement() {
+                                const elapsed = Date.now() - startTime;
+                                progress = Math.min(elapsed / duration, 1);
+                                
+                                // Ease in-out
+                                const eased = progress < 0.5 ? 
+                                    2 * progress * progress : 
+                                    1 - Math.pow(-2 * progress + 2, 2) / 2;
+                                
+                                // Apply position
+                                object.position.y = startPosY + 
+                                    (targetPositionY - startPosY) * eased;
+                                object.position.z = startPosZ + 
+                                    (targetPositionZ - startPosZ) * eased;
+                                
+                                if (progress < 1) {
+                                    requestAnimationFrame(animateHandMovement);
+                                } else {
+                                    // Return to original after a pause
+                                    setTimeout(() => {
+                                        let returnProgress = 0;
+                                        const returnStartTime = Date.now();
+                                        const returnStartPosY = object.position.y;
+                                        const returnStartPosZ = object.position.z;
+                                        
+                                        function returnToOriginal() {
+                                            const returnElapsed = Date.now() - returnStartTime;
+                                            returnProgress = Math.min(returnElapsed / duration, 1);
+                                            
+                                            // Ease in-out
+                                            const returnEased = returnProgress < 0.5 ? 
+                                                2 * returnProgress * returnProgress : 
+                                                1 - Math.pow(-2 * returnProgress + 2, 2) / 2;
+                                            
+                                            // Apply position back to original
+                                            object.position.y = returnStartPosY + 
+                                                (original.position.y - returnStartPosY) * returnEased;
+                                            object.position.z = returnStartPosZ + 
+                                                (original.position.z - returnStartPosZ) * returnEased;
+                                            
+                                            if (returnProgress < 1) {
+                                                requestAnimationFrame(returnToOriginal);
+                                            }
+                                        }
+                                        
+                                        returnToOriginal();
+                                    }, 500 + Math.random() * 1000);
+                                }
+                            }
+                            
+                            animateHandMovement();
+                        }
+                    }
+                });
+                break;
+                
+            case 2:
+                // Digital effects animation (aura pulsing)
+                avatar.traverse(object => {
+                    // Find the aura objects (wireframe spheres)
+                    if (object.isMesh && object.material.wireframe) {
+                        // Pulse the aura
+                        const originalScale = object.scale.clone();
+                        const targetScale = originalScale.clone().multiplyScalar(1.1);
+                        
+                        let progress = 0;
+                        const duration = 3000;
+                        const startTime = Date.now();
+                        
+                        function pulseAura() {
+                            const elapsed = Date.now() - startTime;
+                            progress = Math.min(elapsed / duration, 1);
+                            
+                            // Full pulse cycle (expand then contract)
+                            const pulse = Math.sin(progress * Math.PI);
+                            
+                            // Apply scale
+                            const scaleFactor = 1 + (pulse * 0.1);
+                            object.scale.set(
+                                originalScale.x * scaleFactor,
+                                originalScale.y * scaleFactor,
+                                originalScale.z * scaleFactor
+                            );
+                            
+                            // Also pulse opacity
+                            object.material.opacity = 
+                                Math.max(0.02, object.material.opacity + pulse * 0.02);
+                            
+                            if (progress < 1) {
+                                requestAnimationFrame(pulseAura);
+                            } else {
+                                // Reset to original
+                                object.scale.copy(originalScale);
+                                // In this case we don't need to return to original - the cycle completed
+                            }
+                        }
+                        
+                        pulseAura();
+                    }
+                });
+                break;
+        }
+        
+        // Queue next random animation
+        setTimeout(randomIdleAnimations, 4000 + Math.random() * 6000);
+    }
+    
+    // Start random idle animations
+    randomIdleAnimations();
+}
